@@ -1,0 +1,20 @@
+{
+  "name": "transaction-ledger-api",
+  "version": "1.0.0",
+  "description": "Transaction Ledger API (Express + SQLite) with a paper-ledger web UI",
+  "private": true,
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test tests/api.test.js",
+    "seed": "node scripts/seed.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.2.0",
+    "express": "^4.21.2"
+  }
+}

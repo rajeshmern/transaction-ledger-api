@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Folio · Transaction Ledger</title>
+  <meta name="description" content="Folio — a paper-style transaction ledger with accounts, credits, debits and transfers." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231f2a5a'/%3E%3Cpath d='M9 8h10a4 4 0 0 1 4 4v12H13a4 4 0 0 1-4-4z' fill='%23f7f0e1'/%3E%3Cpath d='M13 13h6M13 17h6' stroke='%23d8432a' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="desk">
+    <header class="masthead">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+          <rect width="40" height="40" rx="11" fill="#1f2a5a" />
+          <path d="M11 10h13a5 5 0 0 1 5 5v15H16a5 5 0 0 1-5-5z" fill="#f7f0e1" />
+          <path d="M16 17h8M16 22h8" stroke="#d8432a" stroke-width="2.4" stroke-linecap="round" />
+          <circle cx="29" cy="11" r="4" fill="#f2b84b" stroke="#1f2a5a" stroke-width="2" />
+        </svg>
+        <div>
+          <h1>Folio</h1>
+          <p>The transaction ledger</p>
+        </div>
+      </div>
+      <div class="masthead-right">
+        <span class="pill" id="healthPill"><i></i><span>connecting…</span></span>
+      </div>
+    </header>
+
+    <main class="book">
+      <!-- ── Account index ─────────────────────────────── -->
+      <aside class="index" aria-label="Accounts">
+        <div class="index-head">
+          <h2>Accounts</h2>
+          <span class="count" id="accountCount">0</span>
+        </div>
+
+        <form id="newAccountForm" class="open-account" autocomplete="off">
+          <label for="newAccountName" class="sr-only">New account holder name</label>
+          <input id="newAccountName" name="name" type="text" maxlength="100" placeholder="Open a new account…" />
+          <button type="submit" class="btn btn-ink" aria-label="Open account">
+            <svg viewBox="0 0 20 20" width="16" height="16"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </button>
+        </form>
+
+        <ul class="tabs" id="accountList" role="list"></ul>
+        <p class="index-foot">Balances always start at <b>₹0.00</b>.<br />Only transactions can change them.</p>
+      </aside>
+
+      <!-- ── Open folio ────────────────────────────────── -->
+      <section class="folio" id="folio" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <!-- Voucher dialog (credit / debit / transfer) -->
+  <dialog id="voucher" class="voucher">
+    <form method="dialog" id="voucherForm" autocomplete="off" novalidate>
+      <div class="voucher-top">
+        <div>
+          <p class="eyebrow" id="voucherEyebrow">Voucher</p>
+          <h3 id="voucherTitle">New entry</h3>
+        </div>
+        <button type="button" class="icon-btn" id="voucherClose" aria-label="Close">
+          <svg viewBox="0 0 20 20" width="18" height="18"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <div class="seg" id="typeSeg" role="radiogroup" aria-label="Entry type">
+        <button type="button" role="radio" data-mode="credit" class="seg-credit">Credit <small>money in</small></button>
+        <button type="button" role="radio" data-mode="debit" class="seg-debit">Debit <small>money out</small></button>
+        <button type="button" role="radio" data-mode="transfer" class="seg-transfer">Transfer <small>A → B</small></button>
+      </div>
+
+      <div class="field" id="fieldTo" hidden>
+        <label for="vTo">Send to</label>
+        <select id="vTo"></select>
+      </div>
+
+      <div class="field amount-field">
+        <label for="vAmount">Amount</label>
+        <div class="amount-input">
+          <span>₹</span>
+          <input id="vAmount" inputmode="decimal" placeholder="0.00" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="vRef">Reference ID <em>unique per account</em></label>
+        <div class="ref-row">
+          <input id="vRef" maxlength="100" placeholder="e.g. INV-2041" />
+          <button type="button" class="btn btn-ghost" id="vRefGen" title="Generate a reference">↻ Generate</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="vDesc">Description <em>optional</em></label>
+        <input id="vDesc" maxlength="255" placeholder="What is this for?" />
+      </div>
+
+      <p class="form-error" id="voucherError" role="alert" hidden></p>
+
+      <div class="voucher-actions">
+        <button type="button" class="btn btn-ghost" id="voucherCancel">Cancel</button>
+        <button type="submit" class="btn btn-ink" id="voucherSubmit">Post entry</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="stamps" id="stamps" aria-live="assertive"></div>
+  <script src="app.js"></script>
+</body>
+</html>
